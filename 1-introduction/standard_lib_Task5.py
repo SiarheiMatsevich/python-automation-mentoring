@@ -4,7 +4,13 @@ import argparse
 import sys
 
 
-def show_dir(path):
+def show_dir(path: str) -> PrettyTable:
+    """
+    Generate an instance of PrettyTable object with following headers:
+        'Mode', 'Owner', 'Group', 'Size', 'File name'
+    :param path: path to directory
+    :return: PrettyTable instance with files attributes of target directory
+    """
     out = PrettyTable()
     out.field_names = ['Mode', 'Owner', 'Group', 'Size', 'File name']
     directory = os.listdir(path)
