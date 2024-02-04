@@ -21,10 +21,10 @@ def get_most_used_letter_and_word_count(text: str, word: str) -> None:
     normalized_str = text.lower()
     count = [normalized_str.count(i) for i in string.ascii_lowercase]
     top_used = string.ascii_lowercase[count.index(max(count))]
-    word_count = normalized_str.count(word)
-    print(f'Letter "{top_used}" is used most often')
-    print(f'The word "Python" is used {word_count} times.')
+    word_count = normalized_str.count(word.lower())
+    return f'Letter "{top_used}" is used most often\nThe word "Python" is used {word_count} times.'
+
 
 
 if __name__ == "__main__":
-    get_most_used_letter_and_word_count(input_str, 'Python')
+    print(get_most_used_letter_and_word_count(input_str, 'Python'))
