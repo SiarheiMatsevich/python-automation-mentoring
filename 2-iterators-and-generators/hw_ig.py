@@ -14,8 +14,10 @@ def merge_elems(*elems: Any) -> Any:
     :param elems: elements to be merged
     """
     for elem in elems:
-        if hasattr(elem, '__iter__') and (hasattr(elem, '__next__') or not len(elem) == 1):
+        if hasattr(elem, '__iter__') and (hasattr(elem, '__next__') or len(elem) != 1):
             yield from merge_elems(*elem)
+        elif hasattr(elem, '__iter__') and (len(elem) == 1):
+            yield elem[0]
         else:
             yield elem
 
