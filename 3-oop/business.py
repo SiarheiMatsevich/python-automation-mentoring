@@ -77,7 +77,7 @@ class Company(object):
         if employee in self.employees:
             # check employee is Manager
             if isinstance(employee, Manager):
-                reward = 10
+                reward = 12
                 self.__money -= reward
                 return reward
             else:
