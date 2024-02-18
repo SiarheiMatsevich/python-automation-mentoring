@@ -1,38 +1,41 @@
 import abc
+from typing import Optional
 
 
 # Implement all methods where `NotImplementedError` is raised
 
 
 class Company(object):
-    """ Represents a company """
+    """
+    Represents a company
+    """
 
-    def __init__(self, name, address=None):
+    def __init__(self, name: str, address: Optional[str] = None):
         self.name = name
         self.address = address
         self.employees = list()
         self.__money = 1000
 
-    def add_employee(self, employee):
+    def add_employee(self, employee: 'Employee') -> None:
         """
         Adds an employee to 'self.employees' list.
         Checks if the employee is an engineer or manager and not already employed
-        :param employee: employee that will be added to 'self.employees' list
         """
-        # make sure employee is an instance of Engineer or Manager
+        # make sure an employee is an instance of Engineer or Manager
         # make sure he is not employed already
         if isinstance(employee, (Engineer, Manager)):
             if employee.is_employed:
                 raise ValueError('The employee is already employed')
             else:
                 self.employees.append(employee)
+                employee.company = self
         else:
-            raise ValueError('Employee is not an Engineer or Manager')
+            raise ValueError(f'{employee} is not an Engineer or Manager')
 
-    def dismiss_employee(self, employee):
+    def dismiss_employee(self, employee: 'Employee') -> None:
         """
         Dismisses an employee. Employee must be a company member.
-        Company should notify employee that he/she was dismissed
+        A company should notify the employee that he/she was dismissed
         """
         if employee in self.employees:
             self.employees.remove(employee)
@@ -40,53 +43,66 @@ class Company(object):
         else:
             raise LookupError('The employee is not employed to given company')
 
-    def notify_im_leaving(self, employee):
-        """ En employee should call this method when leaving a company """
+    def notify_im_leaving(self, employee: 'Employee') -> None:
+        """
+        An employee should call this method when leaving a company
+        """
         if employee in self.employees:
             self.employees.remove(employee)
         else:
             raise LookupError('The employee is not employed to given company')
 
-    def do_tasks(self, employee):
+    def do_tasks(self, employee: 'Engineer') -> int:
         """
         Engineer should call this method when he is working.
         Company should withdraw 10 money from a personal account and return
         them to engineer. That will be a payment
-        :rtype: int
         """
         # make sure engineer is employed to this company
         if employee in self.employees:
             # check employee is Engineer
             if isinstance(employee, Engineer):
                 reward = 10
-                self.__money -= reward
-                return reward
+                if self.__money >= reward:
+                    self.__money -= reward
+                    if self.is_bankrupt:
+                        self.go_bankrupt()
+                    return reward
+                else:
+                    raise ValueError(f'The {self} has not enough money to pay for the work')
             else:
                 raise TypeError('Employee must be an engineer')
         else:
             raise LookupError('The employee is not employed to given company')
 
-    def write_reports(self, employee):
+    def write_reports(self, employee: 'Manager') -> int:
         """
-                Manager should call this method when he is working.
-                Company should withdraw 12 money from a personal account and return
-                them to manager. That will be a payment
-                :rtype: int
-                """
+        Manager should call this method when he is working.
+        A Company should withdraw 12 money from a personal account and return
+        them to manager.
+        That will be a payment
+        """
         # make sure manager is employed to this company
         if employee in self.employees:
             # check employee is Manager
             if isinstance(employee, Manager):
                 reward = 12
-                self.__money -= reward
-                return reward
+                if self.__money >= reward:
+                    self.__money -= reward
+                    if self.is_bankrupt:
+                        self.go_bankrupt()
+                    return reward
+                else:
+                    raise ValueError(f'The {self} has not enough money to pay for the work')
             else:
                 raise TypeError('Employee must be a manager')
         else:
             raise LookupError('The employee is not employed to given company')
 
-    def make_a_party(self):
-        """ Party time! All employees get 5 money """
+    def make_a_party(self) -> None:
+        """
+        Party time! All employees get 5 money
+        """
         # make sure a company is not a bankrupt before and after the party
         if not self.is_bankrupt:
             # call employee.bonus_to_salary()
@@ -99,13 +115,16 @@ class Company(object):
         else:
             raise Exception('Party cannot be held. The company is bankrupt')
 
-    def show_money(self):
-        """ Displays amount of money that company has """
+    def show_money(self) -> int:
+        """
+        Displays amount of money that company has
+        """
         return self.__money
 
-    def go_bankrupt(self):
+    def go_bankrupt(self) -> None:
         """
-        Declare bankruptcy. Company money are drop to 0.
+        Declare bankruptcy.
+        Company money drops to 0.
         All employees become unemployed.
         """
         for employee in self.employees:
@@ -114,36 +133,43 @@ class Company(object):
         self.__money = 0
 
     @property
-    def is_bankrupt(self):
-        """ returns True or False """
+    def is_bankrupt(self) -> bool:
+        """
+        Returns True or False
+        """
         return self.__money <= 0
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'Company (%s)' % self.name
 
 
 class Person(object):
-    """ Represents any person """
+    """
+    Represents any person
+    """
 
-    def __init__(self, name, age, sex=None, address=None):
+    def __init__(self, name: str, age: int, sex: Optional[str] = None, address: Optional[str] = None):
         self.name = name
         self.age = age
         self.sex = sex if sex is not None else '<not specified>'
         self.address = address
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '%s, %s years old' % (self.name, self.age)
 
 
 class Employee(Person):
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, name, age, sex=None, address=None):
+    def __init__(self, name: str, age: int, sex: Optional[str] = None, address: Optional[str] = None):
         super(Employee, self).__init__(name, age, sex, address)
         self.company = None
         self.__money = 0
 
-    def join_company(self, company):
+    def join_company(self, company: Company) -> None:
+        """
+        Adds the employee to the company list if it is possible
+        """
         # make sure that this person is not employed already
         if not self.is_employed:
             company.add_employee(self)
@@ -151,19 +177,23 @@ class Employee(Person):
         else:
             raise AttributeError(f'The employee {self} is already employed')
 
-    def become_unemployed(self):
-        """ Leave current company """
+    def become_unemployed(self) -> None:
+        """
+        Leave the current company
+        """
         if self.is_employed:
             self.company.notify_im_leaving(self)
             self.company = None
         else:
             raise AttributeError(f'The employee {self} is not employed to any company')
 
-    def notify_dismissed(self):
-        """ Company should call this method when dismissing an employee """
+    def notify_dismissed(self) -> None:
+        """
+        Company should call this method when dismissing an employee
+        """
         self.company = None
 
-    def bonus_to_salary(self, company, reward=5):
+    def bonus_to_salary(self, company: Company, reward: int = 5) -> None:
         """
         Company should call this method on each employee when having a party
         """
@@ -173,33 +203,44 @@ class Employee(Person):
             raise AttributeError(f'{self} is not an employee of {company}')
 
     @property
-    def is_employed(self):
-        """ returns True or False """
+    def is_employed(self) -> bool:
+        """
+        Returns True or False
+        """
         return self.company is not None
 
-    def put_money_into_my_wallet(self, amount):
-        """ Adds the indicated amount of money to persons budget """
+    def put_money_into_my_wallet(self, amount: int) -> None:
+        """
+        Adds the indicated amount of money to person's budget
+        """
         # Engineer and Manager will have to use this method to store their
         # salary, because __money is a private attribute
         self.__money += amount
 
-    def show_money(self):
-        """ Shows how much money person has earned """
+    def show_money(self) -> int:
+        """
+        Shows how much money person has earned
+        """
         return self.__money
 
     @abc.abstractmethod
-    def do_work(self):
-        """ This method requires re-implementation """
+    def do_work(self) -> None:
+        """
+        This method requires re-implementation
+        """
         raise NotImplemented('This method requires re-implementation')
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         if self.is_employed:
             return '%s works at %s' % (self.name, self.company)
-        return '%s, unemployed'
+        return '%s, unemployed' % self.name
 
 
 class Engineer(Employee):
-    def do_work(self):
+    def do_work(self) -> None:
+        """
+        Does work and puts money into wallet.
+        """
         if self.is_employed:
             self.put_money_into_my_wallet(self.company.do_tasks(self))
         else:
@@ -207,7 +248,10 @@ class Engineer(Employee):
 
 
 class Manager(Employee):
-    def do_work(self):
+    def do_work(self) -> None:
+        """
+        Does work and puts money into wallet.
+        """
         if self.is_employed:
             self.put_money_into_my_wallet(self.company.write_reports(self))
         else:
@@ -215,9 +259,11 @@ class Manager(Employee):
 
 
 def check_yourself():
-    """ Now let's operate on objects """
+    """
+    Now let's operate on objects
+    """
 
-    # create first company
+    # create the first company
     fruits_company = Company('Fruits', address='Ocean street, 1')
     print(fruits_company)
 
@@ -227,7 +273,7 @@ def check_yourself():
     alex.do_work()
     alex.show_money()
 
-    # add second company
+    # add the second company
     doors_company = Company('Windows and doors', address='Mountain ave. 10')
     print(doors_company)
 
