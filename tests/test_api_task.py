@@ -1,9 +1,7 @@
 import unittest
 import requests
 from random import choice, randint
-
 from requests import Response
-
 import HTMLTestRunner
 
 
@@ -64,11 +62,12 @@ class TestBeers(unittest.TestCase):
         response = requests.get(ENDPOINT, params=params)
         self.assertEqual(response.status_code, 200)
         body = response.json()
+        beers = [body[n][filter_criteria] for n in range(len(body))]
         if filter_option[0] == 'l':
-            self.assertTrue(map(lambda x: x < filter_value, [body[n][filter_criteria] for n in range(len(body))]))
+            self.assertTrue(all([x < filter_value for x in beers]))
 
         if filter_option[0] == 'g':
-            self.assertTrue(map(lambda x: x > filter_value, [body[n][filter_criteria] for n in range(len(body))]))
+            self.assertTrue(all(x > filter_value for x in beers))
 
     def test_param_without_value(self):
         """
